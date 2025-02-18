@@ -1,0 +1,61 @@
+{:deps
+ {net.cgrand/macrovich      {:mvn/version "0.2.2"}
+  org.clojure/tools.logging {:mvn/version "1.3.0"}
+  potemkin/potemkin         {:mvn/version "0.4.7"}}
+
+ :aliases
+ {:dev
+  {:extra-paths ["test"]
+
+   :extra-deps
+   {clj-kondo/clj-kondo     {:mvn/version "2025.01.16"}
+    io.github.metabase/hawk {:mvn/version "1.0.7"}}}
+
+  :test
+  {:exec-fn mb.hawk.core/find-and-run-tests-cli}
+
+  ;; clojure -M:kondo --lint src test
+  ;;
+  ;; clojure -M:kondo --version
+  ;;
+  ;; clojure -M:kondo --copy-configs --dependencies --lint "$(clojure -A:dev -Spath)" --skip-lint --parallel
+  ;;
+  ;; Run Kondo from the JVM using the pinned version. Preferable to running the installed command since we can pin the
+  ;; version here which may be different from the version installed on your computer.
+  ;;
+  ;; Use this to only run Kondo against specific files.
+  :kondo
+  {:replace-deps
+   {clj-kondo/clj-kondo {:mvn/version "2025.01.16"}}
+
+   :main-opts
+   ["-m" "clj-kondo.main"]}
+
+  ;; clojure -M:kondo:kondo/all
+  ;;
+  ;; Like the command above but includes arguments so it lints everything.
+  :kondo/all
+  {:main-opts
+   ["-m" "clj-kondo.main"
+    "--parallel"
+    ;; enable this if Kondo isn't working as expected or if LSP jump-to-definition is being fussy
+    #_"--debug"
+    "--lint"
+    "src"
+    "test"]}
+
+  ;; to fix indentation in source files:
+  ;;
+  ;;     clj -T:cljfmt fix
+  ;;
+  ;; to fix errors in specific source files:
+  ;;
+  ;;     clj -T:cljfmt fix '{:paths ["src/metabase/query_processor/card.clj"]}'
+  ;;
+  ;; to check for errors without fixing them:
+  ;;
+  ;;    clj -T:cljfmt check
+  :cljfmt
+  {:deps       {io.github.weavejester/cljfmt {:git/sha "fc3340da3c8344b3fbb336d190ce696ef40e42d4"}}
+   :ns-default cljfmt.tool
+   :exec-fn    cljfmt.tool/fix}}}

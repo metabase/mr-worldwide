@@ -1,0 +1,65 @@
+;; Cljfmt config. See https://github.com/weavejester/cljfmt#formatting-options
+{:sort-ns-references?
+ true
+
+ :function-arguments-indentation
+ :community
+
+ :parallel?
+ true
+
+ :paths
+ ["src"
+  "test"
+  ".clj-kondo/src"
+  ".clj-kondo/test"]
+
+ ;; See https://github.com/weavejester/cljfmt/blob/master/cljfmt/resources/cljfmt/indents/clojure.clj for the default
+ ;; definitions
+ ;;
+ ;;    [[:block 0]]
+ ;;             ^ number of special args
+ ;;
+ ;; `:block` indentation means format with all arguments indented 2 spaces except for the 'special' arguments which
+ ;; normally are supposed to go on the first line. e.g. `let` gets [[:block 1]] because it has one 'special' arg.
+ ;;
+ ;;    [[:inner 0]]
+ ;;             ^ depth
+ ;;    [[:inner 2 0]]
+ ;;               ^ argument index to restrict this rule to
+ ;;
+ ;; `:inner` indentation is like `:defn` indentation. `[[:inner 0]]` (default for `defn`) means all arguments at depth
+ ;; zero get indented 2 spaces if not on the first line regardless of number of elements on the first line.
+ :extra-indents
+ {;; clojure.core stuff
+  fn*                                                                                  [[:inner 0]]
+  let*                                                                                 [[:block 1]]
+  with-meta                                                                            [[:default]]
+  ;; library stuff. Libraries that specify their own `:style/indent` specs are included in the section after this
+  ;; since it is generated automatically.
+  clojure.core.match/match                                                             [[:block 1]]
+  clojure.test.check.properties/for-all                                                [[:block 1]]
+  clojure.test.check.properties/for-all*                                               [[:block 1]]
+  clojure.test.check/quick-check                                                       [[:block 1]]
+  clojure.tools.macro/macrolet                                                         [[:block 1] [:inner 2 0]]
+  def-map-type                                                                         [[:block 2] [:inner 1]]
+  defprotocol+                                                                         [[:block 1] [:inner 1]]
+  defrecord+                                                                           [[:block 2] [:inner 1]]
+  deftype+                                                                             [[:block 2] [:inner 1]]
+  net.cgrand.macrovich/case                                                            [[:block 0]]
+  potemkin.namespaces/import-vars                                                      [[:default]]
+  potemkin.types/def-map-type                                                          [[:block 2] [:inner 1]]
+  potemkin.types/defprotocol+                                                          [[:block 1] [:inner 1]]
+  potemkin.types/defrecord+                                                            [[:block 2] [:inner 1]]
+  potemkin.types/deftype+                                                              [[:block 2] [:inner 1]]
+  potemkin/def-map-type                                                                [[:block 2] [:inner 1]]
+  potemkin/defprotocol+                                                                [[:block 1] [:inner 1]]
+  potemkin/defrecord+                                                                  [[:block 2] [:inner 1]]
+  potemkin/deftype+                                                                    [[:block 2] [:inner 1]]
+  potemkin/import-vars                                                                 [[:default]]
+  mr-worldwide.core/deferred-trs                                                       [[:default]]
+  mr-worldwide.core/deferred-tru                                                       [[:default]]
+  mr-worldwide.core/trs                                                                [[:default]]
+  mr-worldwide.core/trsn                                                               [[:default]]
+  mr-worldwide.core/tru                                                                [[:default]]
+  mr-worldwide.core/trun                                                               [[:default]]}}

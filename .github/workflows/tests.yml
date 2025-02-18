@@ -1,0 +1,78 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  kondo:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java & Clojure
+        uses: ./.github/actions/setup-clojure
+        with:
+          cache-key: kondo
+      - name: Run Kondo
+        run: >-
+          ./bin/kondo.sh
+
+  tests:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Java & Clojure
+      uses: ./.github/actions/setup-clojure
+      with:
+        cache-key: tests
+    - run: clojure -X:dev:test
+      name: Run tests
+      env:
+        CI: TRUE
+
+  whitespace-linter:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Java & Clojure
+      uses: ./.github/actions/setup-clojure
+      with:
+        cache-key: whitespace-linter
+    - run: clojure -T:whitespace-linter
+      name: Run whitespace linter
+
+  check:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Java & Clojure
+      uses: ./.github/actions/setup-clojure
+      with:
+        cache-key: check
+    - run: clojure -M:check
+      name: Check namespaces
+
+  # codecov:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Setup Java & Clojure
+  #     uses: ./.github/actions/setup-clojure
+  #     with:
+  #       cache-key: codecov
+  #   - run: clojure -X:dev:test-h2:cloverage
+  #     name: Run tests with Cloverage
+  #   - name: Upload results to codecov.io
+  #     uses: codecov/codecov-action@v3
+  #     with:
+  #       files: ./target/coverage/codecov.json
+
+  codespell:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: codespell-project/actions-codespell@master
