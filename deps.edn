@@ -77,4 +77,15 @@
   {:deps       {io.github.weavejester/cljfmt {:git/sha "fc3340da3c8344b3fbb336d190ce696ef40e42d4"}}
    :ns-default cljfmt.tool
    :exec-fn    cljfmt.tool/fix
-   :exec-args  {:paths ["mr-worldwide" "mr-worldwide.build"]}}}}
+   :exec-args  {:paths ["mr-worldwide" "mr-worldwide.build"]}}
+
+  ;; clojure -T:whitespace-linter
+  :whitespace-linter
+  {:deps       {com.github.camsaul/whitespace-linter {:sha "e35bc252ccf5cc74f7d543ef95ad8a3e5131f25b"}}
+   :ns-default whitespace-linter
+   :exec-fn    whitespace-linter/lint
+   :exec-args  {:paths            ["./deps.edn"
+                                   "./mr-worldwide"
+                                   "./mr-worldwide.build"]
+                :include-patterns ["\\.clj.?$"
+                                   "\\.edn$"]}}}}

@@ -6,3 +6,5 @@
 - Get build script working, with two separate artifacts.
 
 - Documentation.
+
+- Set up ClojureScript tests.
