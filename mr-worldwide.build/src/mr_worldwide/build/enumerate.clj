@@ -169,11 +169,11 @@
 
 ;;; TODO -- these are out of date; update
 #_(comment
-  (create-pot-file! {:source-paths ["/home/cam/src/metabase/driver/util.clj"]}
-                    "pot.pot")
+    (create-pot-file! {:source-paths ["/home/cam/src/metabase/driver/util.clj"]}
+                      "pot.pot")
 
-  (take 4 (analyze-translations roots))
-  (def single-file (str u/project-root-directory "/src/metabase/util.clj"))
-  (create-pot-file! single-file "pot.pot")
-  (map (juxt meta identity)
-       (g/grasp single-file ::translate)))
+    (take 4 (analyze-translations roots))
+    (def single-file (str u/project-root-directory "/src/metabase/util.clj"))
+    (create-pot-file! single-file "pot.pot")
+    (map (juxt meta identity)
+         (g/grasp single-file ::translate)))

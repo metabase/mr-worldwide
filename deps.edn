@@ -76,4 +76,5 @@
   :cljfmt
   {:deps       {io.github.weavejester/cljfmt {:git/sha "fc3340da3c8344b3fbb336d190ce696ef40e42d4"}}
    :ns-default cljfmt.tool
-   :exec-fn    cljfmt.tool/fix}}}
+   :exec-fn    cljfmt.tool/fix
+   :exec-args  {:paths ["mr-worldwide" "mr-worldwide.build"]}}}}
