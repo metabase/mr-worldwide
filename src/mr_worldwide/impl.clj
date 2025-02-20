@@ -28,12 +28,11 @@
   Returns `nil` for invalid strings -- you can use this to check whether a String is valid."
   ^String [s]
   {:pre [((some-fn nil? string?) s)]}
-  #_{:clj-kondo/ignore [:discouraged-var]}
   (when (string? s)
-    (when-let [[_ language country] (re-matches #"^(\w{2})(?:[-_](\w{2}))?$" s)]
-      (let [language (str/lower-case language)]
+    (when-let [[_ ^String language ^String country] (re-matches #"^(\w{2})(?:[-_](\w{2}))?$" s)]
+      (let [language (.toLowerCase language Locale/ENGLISH)]
         (if country
-          (str language \_ (some-> country str/upper-case))
+          (str language \_ (.toUpperCase country Locale/ENGLISH))
           language)))))
 
 (extend-protocol CoerceToLocale

@@ -1,4 +1,4 @@
-(ns i18n.create-artifacts.test-common)
+(ns mr-worldwide.build.create-artifacts.test-common)
 
 (def ^:private singular-message-frontend
   {:id                "No table description yet"

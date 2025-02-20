@@ -1,8 +1,8 @@
-(ns i18n.create-artifacts.frontend-test
+(ns mr-worldwide.build.create-artifacts.frontend-test
   (:require
    [clojure.test :refer :all]
-   [i18n.create-artifacts.frontend :as frontend]
-   [i18n.create-artifacts.test-common :as test-common]))
+   [mr-worldwide.build.create-artifacts.frontend :as frontend]
+   [mr-worldwide.build.create-artifacts.test-common :as test-common]))
 
 (deftest ->ttag-reference-test
   (is (= "${ 0 } schemas"
