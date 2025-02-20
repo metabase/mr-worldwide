@@ -1,0 +1,5 @@
+{:deps
+ {cheshire/cheshire                 {:mvn/version "5.13.0"}
+  commons-io/commons-io             {:mvn/version "2.18.0"}
+  io.github.borkdude/grasp          {:mvn/version "0.1.4"}
+  org.fedorahosted.tennera/jgettext {:mvn/version "0.15.1"}}}

@@ -77,8 +77,8 @@
                        (f)))))))))))
 
 (deftest ^:parallel trun-test
-  (mt/with-mock-i18n-bundles {"es" {:headers {"Plural-Forms" "nplurals=2; plural=(n != 1);\n"}
-                                     :messages {"{0} table" ["{0} tabla" "{0} tablas"]}}}
+  (mt/with-mock-i18n-bundles {"es" {:headers  {"Plural-Forms" "nplurals=2; plural=(n != 1);\n"}
+                                    :messages {"{0} table" ["{0} tabla" "{0} tablas"]}}}
     (doseq [[message f]
             {"trun"
              (fn [n] (i18n/trun "{0} table" "{0} tables" n))

@@ -20,7 +20,8 @@ jobs:
         run: >-
           ./bin/kondo.sh
 
-  tests:
+  tests-mr-worldwide:
+    name: Run tests (mr-worldwide)
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     steps:
@@ -29,7 +30,22 @@ jobs:
       uses: ./.github/actions/setup-clojure
       with:
         cache-key: tests
-    - run: clojure -X:dev:test
+    - run: clojure -X:test/mr-worldwide
+      name: Run tests
+      env:
+        CI: TRUE
+
+  tests-mr-worldwide-build:
+    name: Run tests (mr-worldwide.build)
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Java & Clojure
+      uses: ./.github/actions/setup-clojure
+      with:
+        cache-key: tests-build
+    - run: clojure -X:test/mr-worldwide.build
       name: Run tests
       env:
         CI: TRUE
