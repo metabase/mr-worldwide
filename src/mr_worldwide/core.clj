@@ -1,10 +1,11 @@
 (ns mr-worldwide.core
   "i18n functionality."
   (:require
+   [cheshire.core :as json]
+   [cheshire.generate :as json.generate]
    [clojure.string :as str]
    [clojure.tools.logging :as log]
    [clojure.walk :as walk]
-   [metabase.util.json :as json]
    [mr-worldwide.impl :as i18n.impl]
    [net.cgrand.macrovich :as macros]
    [potemkin :as p]
@@ -24,40 +25,44 @@
   translate])
 
 (def ^:dynamic *user-locale*
-  "Bind this to a string, keyword, or `Locale` to set the locale for the current User. To get the locale we should
-  *use*, use the `user-locale` function instead."
+  "Bind this to a string, keyword, `Locale`, or thunk that returns one of these to set the locale for the current
+  user (i.e., the one used by [[tru]] and friends). To get the locale we should *use*, use the [[user-locale]]
+  function instead."
   nil)
 
-(def ^:dynamic *site-locale-override*
-  "Bind this to a string, keyword to override the value returned by `site-locale`. For testing purposes,
-  such as when swapping out an application database temporarily, when the setting table may not even exist."
+(def ^:dynamic *site-locale*
+  "Bind this to a string, keyword, `Locale`, or thunk that returns one of these to override the value returned
+  by [[site-locale]]."
   nil)
 
-(defn site-locale-string
-  "The default locale string for this Metabase installation. Normally this is the value of the `site-locale` Setting,
-  which is also a string."
-  []
-  (or *site-locale-override*
-      (i18n.impl/site-locale-from-setting)
+(defonce ^:private -default-site-locale
+  (atom nil))
+
+(defn set-default-site-locale!
+  "Set the default site locale. This can be set to locale string, keyword, `Locale`, or a thunk that returns one of
+  these."
+  [locale-or-thunk]
+  (reset! -default-site-locale locale-or-thunk))
+
+(defn- -site-locale []
+  (or *site-locale*
+      @-default-site-locale
       "en"))
-
-(defn user-locale-string
-  "Locale string we should *use* for the current User (e.g. `tru` messages) -- `*user-locale*` if bound, otherwise the
-  system locale as a string."
-  []
-  (or *user-locale*
-      (site-locale-string)))
 
 (defn site-locale
   "The default locale for this Metabase installation. Normally this is the value of the `site-locale` Setting."
   ^Locale []
-  (locale (site-locale-string)))
+  (locale (-site-locale)))
+
+(defn- -user-locale []
+  (or *user-locale*
+      (-site-locale)))
 
 (defn user-locale
   "Locale we should *use* for the current User (e.g. `tru` messages) -- `*user-locale*` if bound, otherwise the system
   locale."
   ^Locale []
-  (locale (user-locale-string)))
+  (locale (-user-locale)))
 
 (defn available-locales-with-names
   "Returns all locale abbreviations and their full names"
@@ -72,7 +77,7 @@
   [format-string args pluralization-opts]
   (let [translated (translate (site-locale) format-string args pluralization-opts)]
     (log/tracef "Translated %s for site locale %s -> %s"
-                (pr-str format-string) (pr-str (site-locale-string)) (pr-str translated))
+                (pr-str format-string) (pr-str (-site-locale)) (pr-str translated))
     translated))
 
 (defn- translate-user-locale
@@ -80,8 +85,8 @@
   [format-string args pluralization-opts]
   (let [translated (translate (user-locale) format-string args pluralization-opts)]
     (log/tracef "Translating %s for user locale %s (site locale %s) -> %s"
-                (pr-str format-string) (pr-str (user-locale-string))
-                (pr-str (site-locale-string)) (pr-str translated))
+                (pr-str format-string) (pr-str (-user-locale))
+                (pr-str (-site-locale)) (pr-str translated))
     translated))
 
 (p.types/defrecord+ UserLocalizedString [format-string args pluralization-opts]
@@ -99,10 +104,10 @@
   `json/add-encoder`. Ideally we'd implement those protocols directly as it's faster, but currently that doesn't
   work with Cheshire"
   [localized-string json-generator]
-  (json/write-string json-generator (str localized-string)))
+  (json/generate-string json-generator (str localized-string)))
 
-(json/add-encoder UserLocalizedString localized-to-json)
-(json/add-encoder SiteLocalizedString localized-to-json)
+(json.generate/add-encoder UserLocalizedString localized-to-json)
+(json.generate/add-encoder SiteLocalizedString localized-to-json)
 
 (def LocalizedString
   "Schema for user and system localized string instances"

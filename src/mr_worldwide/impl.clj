@@ -51,7 +51,11 @@
   (locale [this]
     (locale (if-let [namespce (namespace this)]
               (str namespce \_ (name this))
-              (name this)))))
+              (name this))))
+
+  clojure.lang.AFn
+  (locale [thunk]
+    (locale (thunk))))
 
 (defn available-locale?
   "True if `locale` (a string, keyword, or `Locale`) is a valid locale available on this system. Normalizes args
@@ -61,10 +65,17 @@
    (when-let [locale (locale locale-or-name)]
      (LocaleUtils/isAvailableLocale locale))))
 
+(def ^:dynamic *locales*
+  "Bind this to override the set of available locales.
+
+    (binding [*locales* #{\"en\" \"pt_BR\"}]
+      ...)"
+  nil)
+
 (defn- available-locale-names*
   []
   (log/info "Reading available locales from locales.clj...")
-  (some-> (io/resource "locales.clj") slurp edn/read-string :locales (->> (apply sorted-set))))
+  (some->> (io/resource "locales.clj") slurp edn/read-string :locales (into (sorted-set))))
 
 (let [locales (delay (available-locale-names*))]
   (defn available-locale-names
@@ -72,21 +83,22 @@
 
     (available-locale-names) ; -> #{\"en\" \"nl\" \"pt-BR\" \"zh\"}"
     []
-    @locales))
+    (or (not-empty *locales*) @locales)))
 
 (defn- find-fallback-locale*
-  ^Locale [^Locale a-locale]
+  ^Locale [locale-names ^Locale a-locale]
   (some (fn [locale-name]
-          (let [try-locale (locale locale-name)]
+          (let [^Locale try-locale (locale locale-name)]
             ;; The language-only Locale is tried first by virtue of the
             ;; list being sorted.
             (when (and (= (.getLanguage try-locale) (.getLanguage a-locale))
                        (not (= try-locale a-locale)))
               try-locale)))
-        (available-locale-names)))
+        locale-names))
 
-(def ^:private ^{:arglists '([a-locale])} find-fallback-locale
-  (memoize find-fallback-locale*))
+(let [f (memoize find-fallback-locale*)]
+  (defn- find-fallback-locale [a-locale]
+    (f (available-locale-names) a-locale)))
 
 ;; Note: this logic should be kept in sync with the one in `frontend/src/metabase/public/LocaleProvider.tsx`
 (defn fallback-locale
@@ -119,7 +131,7 @@
   (when-let [resource (locale-edn-resource a-locale)]
     (edn/read-string (slurp resource))))
 
-(def ^:private ^{:arglists '([locale-or-name])} translations
+(def ^:private ^{:arglists '([locale-or-name])} ^:dynamic *translations*
   "Fetch a map of original untranslated message format string -> translated message format string for `locale-or-name`
   by reading the corresponding EDN resource file. Does not include translations for parent locale(s). Memoized.
 
@@ -136,7 +148,7 @@
   ^String [locale-or-name format-string n]
   (when (seq format-string)
     (when-let [locale (locale locale-or-name)]
-      (when-let [translations (translations locale)]
+      (when-let [translations (*translations* locale)]
         (when-let [string-or-strings (get-in translations [:messages format-string])]
           (if (string? string-or-strings)
             ;; Only a singular form defined; ignore `n`
@@ -202,31 +214,3 @@
            (catch Throwable _
              (log/errorf e "Invalid format string %s" (pr-str format-string))
              format-string)))))))
-
-(def ^:private ^:dynamic *in-site-locale-from-setting*
-  "Whether we're currently inside a call to [[site-locale-from-setting]], so we can prevent infinite recursion."
-  false)
-
-(defn site-locale-from-setting
-  "Fetch the value of the `site-locale` Setting, or `nil` if it is unset."
-  []
-  (when-let [get-value-of-type (resolve 'metabase.models.setting/get-value-of-type)]
-    (when (bound? get-value-of-type)
-      ;; make sure we don't try to recursively fetch the site locale when we're actively in the process of fetching it,
-      ;; otherwise that will cause infinite loops if we try to log anything... see #32376
-      (when-not *in-site-locale-from-setting*
-        (binding [*in-site-locale-from-setting* true]
-          ;; if there is an error fetching the Setting, e.g. if the app DB is in the process of shutting down, then just
-          ;; return nil.
-          (try
-            (get-value-of-type :string :site-locale)
-            (catch Exception _
-              nil)))))))
-
-(defmethod print-method Locale
-  [locale ^java.io.Writer writer]
-  ((get-method print-dup Locale) locale writer))
-
-(defmethod print-dup Locale
-  [locale ^java.io.Writer writer]
-  (.write writer (format "#locale %s" (pr-str (str locale)))))

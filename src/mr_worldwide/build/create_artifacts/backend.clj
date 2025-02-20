@@ -2,7 +2,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [i18n.common :as i18n]
+   [mr-worldwide.build.common :as i18n]
    [mr-worldwide.build.util :as u])
   (:import
    (java.io FileOutputStream OutputStreamWriter)
@@ -45,44 +45,40 @@
    i18n/print-message-count-xform
    messages))
 
-(def target-directory
-  "Target directory for backend i18n resources."
-  (u/filename u/project-root-directory "resources" "i18n"))
-
-(defn- target-filename [locale]
-  (u/filename target-directory (format "%s.edn" locale)))
+(defn- target-filename [{:keys [backend-target-directory], :as _config} locale]
+  (u/filename backend-target-directory (format "%s.edn" locale)))
 
 (defn- write-edn-file! [po-contents target-file]
-  (u/step "Write EDN file"
-          (with-open [os (FileOutputStream. (io/file target-file))
-                      w  (OutputStreamWriter. os StandardCharsets/UTF_8)]
-            (.write w "{\n")
-            (.write w ":headers\n")
-            (.write w (pr-str (:headers po-contents)))
-            (.write w "\n\n")
-            (.write w ":messages\n")
-            (.write w "{\n")
-            (doseq [{msg-id :id, msg-str :str, msg-str-plural :str-plural}
-                    (messages->edn (:messages po-contents))
-                    :let [msg-strs (or msg-str-plural [msg-str])]]
-              (.write w (pr-str msg-id))
-              (.write w "\n")
-              (when msg-str-plural (.write w "["))
-              (doseq [msg (butlast msg-strs)]
-                (.write w (pr-str msg))
-                (.write w " "))
-              (.write w (pr-str (last msg-strs)))
-              (when msg-str-plural (.write w "]"))
-              (.write w "\n\n"))
-            (.write w "}\n")
-            (.write w "}\n"))))
+  (println "Write EDN file")
+  (with-open [os (FileOutputStream. (io/file target-file))
+              w  (OutputStreamWriter. os StandardCharsets/UTF_8)]
+    (.write w "{\n")
+    (.write w ":headers\n")
+    (.write w (pr-str (:headers po-contents)))
+    (.write w "\n\n")
+    (.write w ":messages\n")
+    (.write w "{\n")
+    (doseq [{msg-id :id, msg-str :str, msg-str-plural :str-plural}
+            (messages->edn (:messages po-contents))
+            :let [msg-strs (or msg-str-plural [msg-str])]]
+      (.write w (pr-str msg-id))
+      (.write w "\n")
+      (when msg-str-plural (.write w "["))
+      (doseq [msg (butlast msg-strs)]
+        (.write w (pr-str msg))
+        (.write w " "))
+      (.write w (pr-str (last msg-strs)))
+      (when msg-str-plural (.write w "]"))
+      (.write w "\n\n"))
+    (.write w "}\n")
+    (.write w "}\n")))
 
 (defn create-artifact-for-locale!
   "Create an artifact with translated strings for `locale` for backend (Clojure) usage."
-  [locale]
-  (let [target-file (target-filename locale)]
-    (u/step (format "Create backend artifact %s from %s" target-file (i18n/locale-source-po-filename locale))
-            (u/create-directory-unless-exists! target-directory)
-            (u/delete-file-if-exists! target-file)
-            (write-edn-file! (i18n/po-contents locale) target-file)
-            (u/assert-file-exists target-file))))
+  [{:keys [backend-target-directory], :as config} locale]
+  (let [target-file (target-filename config locale)]
+    (printf "Create backend artifact %s from %s\n" target-file (i18n/locale-source-po-filename config locale))
+    (u/create-directory-unless-exists! backend-target-directory)
+    (u/delete-file-if-exists! target-file)
+    (write-edn-file! (i18n/po-contents config locale) target-file)
+    (u/assert-file-exists target-file)))

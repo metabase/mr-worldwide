@@ -3,8 +3,8 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [i18n.common :as i18n]
-   [metabuild-common.core :as u])
+   [mr-worldwide.build.common :as i18n]
+   [mr-worldwide.build.util :as u])
   (:import
    (java.io FileOutputStream OutputStreamWriter)
    (java.nio.charset StandardCharsets)))
@@ -44,25 +44,21 @@
                             [(str/lower-case k) v]))
    :translations (->translations-map (:messages po-contents))})
 
-(defn- i18n-map [locale]
-  (->i18n-map (i18n/po-contents locale)))
+(defn- i18n-map [config locale]
+  (->i18n-map (i18n/po-contents config locale)))
 
-(def target-directory
-  "Target directory for frontend i18n resources."
-  (u/filename u/project-root-directory "resources" "frontend_client" "app" "locales"))
-
-(defn- target-filename [locale]
-  (u/filename target-directory (format "%s.json" (str/replace locale #"-" "_"))))
+(defn- target-filename [{:keys [frontend-target-directory], :as _config} locale]
+  (u/filename frontend-target-directory (format "%s.json" (str/replace locale #"-" "_"))))
 
 (defn create-artifact-for-locale!
   "Create an artifact with translated strings for `locale` for frontend (JS) usage."
-  [locale]
-  (let [target-file (target-filename locale)]
-    (u/step (format "Create frontend artifact %s from %s" target-file (i18n/locale-source-po-filename locale))
-            (u/create-directory-unless-exists! target-directory)
-            (u/delete-file-if-exists! target-file)
-            (u/step "Write JSON"
-                    (with-open [os (FileOutputStream. (io/file target-file))
-                                w  (OutputStreamWriter. os StandardCharsets/UTF_8)]
-                      (json/generate-stream (i18n-map locale) w)))
-            (u/assert-file-exists target-file))))
+  [config locale]
+  (let [target-file (target-filename config locale)]
+    (printf "Create frontend artifact %s from %s\n" target-file (i18n/locale-source-po-filename config locale))
+    (u/create-directory-unless-exists! (:frontend-target-directory config))
+    (u/delete-file-if-exists! target-file)
+    (println "Write JSON")
+    (with-open [os (FileOutputStream. (io/file target-file))
+                w  (OutputStreamWriter. os StandardCharsets/UTF_8)]
+      (json/generate-stream (i18n-map config locale) w))
+    (u/assert-file-exists target-file)))

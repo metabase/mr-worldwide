@@ -3,15 +3,22 @@
    [clojure.test :refer :all]
    [clojure.walk :as walk]
    [mr-worldwide.core :as i18n]
+   [mr-worldwide.impl :as i18n.impl]
    [mr-worldwide.test-util :as mt]))
 
-(deftest ^:parallel available-locales-test
-  (testing "Should return locale in normalized format"
-    (is (contains? (set (i18n/available-locales-with-names))
-                   ["pt_BR", "Portuguese (Brazil)"]))))
+(deftest ^:parallel user-locale-from-thunk-test
+  (binding [i18n/*user-locale* (constantly "en")]
+    (is (= (java.util.Locale. "en")
+           (i18n/user-locale)))))
 
-(deftest tru-test
-  (mt/with-mock-i18n-bundles! {"es" {:messages {"must be {0} characters or less"
+(deftest ^:parallel available-locales-test
+  (binding [i18n.impl/*locales* #{"pt_BR"}]
+    (testing "Should return locale in normalized format"
+      (is (contains? (set (i18n/available-locales-with-names))
+                     ["pt_BR" "Portuguese (Brazil)"])))))
+
+(deftest ^:parallel tru-test
+  (mt/with-mock-i18n-bundles {"es" {:messages {"must be {0} characters or less"
                                                 "deben tener {0} caracteres o menos"}}}
     (doseq [[message f] {"tru"
                          (fn [] (i18n/tru "must be {0} characters or less" 140))
@@ -23,12 +30,12 @@
                          (fn [] (str (i18n/deferred-tru (str "must be " "{0} characters or less") 140)))}]
       (testing message
         (testing "Should fall back to English if user locale & system locale are unset"
-          (binding [i18n/*site-locale-override* nil]
+          (binding [i18n/*site-locale* nil]
             (is (= "must be 140 characters or less"
                    (f)))))
 
         (testing "If system locale is set but user locale is not, should use system locale"
-          (binding [i18n/*site-locale-override* "es"]
+          (binding [i18n/*site-locale* "es"]
             (is (= "deben tener 140 caracteres o menos"
                    (f)))))
 
@@ -38,12 +45,12 @@
                    (f)))
 
             (testing "...even if system locale is set"
-              (binding [i18n/*site-locale-override* "en"]
+              (binding [i18n/*site-locale* "en"]
                 (is (= "deben tener 140 caracteres o menos"
                        (f)))))))))))
 
-(deftest trs-test
-  (mt/with-mock-i18n-bundles! {"es" {:messages {"must be {0} characters or less"
+(deftest ^:parallel trs-test
+  (mt/with-mock-i18n-bundles {"es" {:messages {"must be {0} characters or less"
                                                 "deben tener {0} caracteres o menos"}}}
     (doseq [[message f] {"trs"
                          (fn [] (i18n/trs "must be {0} characters or less" 140))
@@ -55,12 +62,12 @@
                          (fn [] (str (i18n/deferred-trs (str "must be " "{0} characters or less") 140)))}]
       (testing message
         (testing "Should fall back to English if user locale & system locale are unset"
-          (binding [i18n/*site-locale-override* nil]
+          (binding [i18n/*site-locale* nil]
             (is (= "must be 140 characters or less"
                    (f)))))
 
         (testing "Should use system locale if set"
-          (binding [i18n/*site-locale-override* "es"]
+          (binding [i18n/*site-locale* "es"]
             (is (= "deben tener 140 caracteres o menos"
                    (f)))
 
@@ -69,8 +76,8 @@
                 (is (= "deben tener 140 caracteres o menos"
                        (f)))))))))))
 
-(deftest trun-test
-  (mt/with-mock-i18n-bundles! {"es" {:headers {"Plural-Forms" "nplurals=2; plural=(n != 1);\n"}
+(deftest ^:parallel trun-test
+  (mt/with-mock-i18n-bundles {"es" {:headers {"Plural-Forms" "nplurals=2; plural=(n != 1);\n"}
                                      :messages {"{0} table" ["{0} tabla" "{0} tablas"]}}}
     (doseq [[message f]
             {"trun"
@@ -79,7 +86,7 @@
              (fn [n] (str (i18n/deferred-trun "{0} table" "{0} tables" n)))}]
       (testing message
         (testing "should fall back to English if user locale & system locale are unset"
-          (binding [i18n/*site-locale-override* nil]
+          (binding [i18n/*site-locale* nil]
             (is (= "0 tables"
                    (f 0)))
 
@@ -100,8 +107,8 @@
             (is (= "2 tablas"
                    (f 2)))))))))
 
-(deftest trsn-test
-  (mt/with-mock-i18n-bundles! {"es" {:headers {"Plural-Forms" "nplurals=2; plural=(n != 1);\n"}
+(deftest ^:parallel trsn-test
+  (mt/with-mock-i18n-bundles {"es" {:headers {"Plural-Forms" "nplurals=2; plural=(n != 1);\n"}
                                      :messages {"{0} table" ["{0} tabla" "{0} tablas"]}}}
     (doseq [[message f]
             {"trsn - singular"
@@ -117,7 +124,7 @@
              (fn [n] (str (i18n/deferred-trsn "{0} table" "{0} tables" n)))}]
       (testing message
         (testing "Should fall back to English if user locale & system locale are unset"
-          (binding [i18n/*site-locale-override* nil]
+          (binding [i18n/*site-locale* nil]
             (is (= "0 tables"
                    (f 0)))
 
@@ -128,7 +135,7 @@
                    (f 2)))))
 
         (testing "Should use system locale if set"
-          (binding [i18n/*site-locale-override* "es"]
+          (binding [i18n/*site-locale* "es"]
             (is (= "0 tablas"
                    (f 0)))
 
