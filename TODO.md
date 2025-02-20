@@ -2,3 +2,7 @@
 
 - Configurable resources directory, or at least something more unique e.g.
   resources/mr-worldwide/
+
+- Get build script working, with two separate artifacts.
+
+- Documentation.
