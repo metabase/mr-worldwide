@@ -1,14 +1,14 @@
-(ns mr-worldwide.build.create-artifacts.frontend-test
+(ns mr-worldwide.build.artifacts.cljs-test
   (:require
    [clojure.test :refer :all]
-   [mr-worldwide.build.create-artifacts.frontend :as frontend]
-   [mr-worldwide.build.create-artifacts.test-common :as test-common]))
+   [mr-worldwide.build.artifacts.cljs :as cljs]
+   [mr-worldwide.build.artifacts.test-common :as test-common]))
 
-(deftest ->ttag-reference-test
+(deftest ^:parallel ->ttag-reference-test
   (is (= "${ 0 } schemas"
-         (#'frontend/->ttag-reference "{0} schemas"))))
+         (#'cljs/->ttag-reference "{0} schemas"))))
 
-(deftest ->i18n-map-test
+(deftest ^:parallel ->i18n-map-test
   (is (= {:charset      "utf-8"
           :headers      {"mime-version"              "1.0"
                          "content-type"              "text/plain; charset=UTF-8"
@@ -31,4 +31,4 @@
                           "${ 0 } metric"
                           {:msgid_plural "{0} metrics"
                            :msgstr       ["${ 0 } metrik" ""]}}}}
-         (#'frontend/->i18n-map test-common/po-contents))))
+         (#'cljs/->i18n-map test-common/po-contents))))

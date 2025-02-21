@@ -1,12 +1,12 @@
-(ns mr-worldwide.build.create-artifacts.backend-test
+(ns mr-worldwide.build.artifacts.clj-test
   (:require
    [clojure.string :as str]
    [clojure.test :refer :all]
-   [mr-worldwide.build.create-artifacts.backend :as backend]
-   [mr-worldwide.build.create-artifacts.test-common :as test-common]))
+   [mr-worldwide.build.artifacts.clj :as clj]
+   [mr-worldwide.build.artifacts.test-common :as test-common]))
 
 (deftest edn-test
-  (#'backend/write-edn-file! test-common/po-contents "/tmp/out.edn")
+  (#'clj/write-edn-file! test-common/po-contents "/tmp/out.edn")
   (is (= ["{"
           ":headers"
           "{\"MIME-Version\" \"1.0\", \"Content-Type\" \"text/plain; charset=UTF-8\", \"Content-Transfer-Encoding\" \"8bit\", \"X-Generator\" \"POEditor.com\", \"Project-Id-Version\" \"Metabase\", \"Language\" \"es\", \"Plural-Forms\" \"nplurals=2; plural=(n != 1);\"}"
@@ -34,7 +34,7 @@
   (testing "messages present in any .clj and .cljc files are detected as backend messages"
     #_{:clj-kondo/ignore [:equals-true :equals-false]}
     (are [source-references expected] (= expected
-                                         (@#'backend/backend-message? {:source-references source-references}))
+                                         (@#'clj/backend-message? {:source-references source-references}))
       ;; Simple .clj and .cljc files with and without line numbers
       ["test.clj"]                                                                  true
       ["test.clj:123"]                                                              true
@@ -44,9 +44,9 @@
       ["src/metabase/query_processor/streaming/xlsx.clj"]                           true
       ["metabase/mbql/normalize.cljc:839"]                                          true
       ["metabase/driver/common.clj:223"]                                            true
-      ["backend/mbql/src/metabase/mbql/normalize.clj"]                              true
+      ["clj/mbql/src/metabase/mbql/normalize.clj"]                              true
       ["metabase_enterprise/audit_app/interface.clj:25"]                            true
-      ["enterprise/backend/test/metabase_enterprise/serialization/load_test.clj"]   true
+      ["enterprise/clj/test/metabase_enterprise/serialization/load_test.clj"]   true
       ["target/classes/metabase/request/util.clj"]                                  true
       ;; Both a FE and a BE path
       ["frontend/src/metabase/browse/components/TableBrowser/TableBrowser.jsx:145"

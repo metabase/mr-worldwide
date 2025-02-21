@@ -1,4 +1,4 @@
-(ns mr-worldwide.build.create-artifacts.backend
+(ns mr-worldwide.build.artifacts.clj
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]

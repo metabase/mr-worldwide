@@ -1,13 +1,29 @@
-## Create POT (Translation Template) File
+## Create POT (Translation Template) File from Clojure source files
 
 ```clj
-(mr-worldwide.build.enumerate/enumerate config)
+#_(mr-worldwide.build.enumerate/enumerate config)
+
+;; clojure -X:mr-worldwide.build.pot/build-pot!
+;; clojure -X:mr-worldwide.build.pot/build-pot! '{:source-paths ["src"]}'
+(mr-worldwide.build.pot/build-pot! config)
+
+{:target-directory "target/mr-worldwide"
+ :pot-filename     "<target-directory>/strings.pot"
+ :source-paths     []
+ ;; TODO -- see if we actually still need this.
+ :overrides [{:file "/src/metabase/analyze/fingerprint/fingerprinters.clj"
+              :message "Error generating fingerprint for {0}"}]}
 ```
 
 ## Create EDN and JSON Artifacts from PO Files
 
 ```clj
-(mr-worldwide.build.create-artifacts config)
+(mr-worldwide.build.artifacts/create-artifacts! config)
+
+{:po-files-directory    []
+ :target-directory      "resources/mr-worldwide"
+ :clj-target-directoy   "<target-directory>/clj"
+ :cljs-target-directory "<target-directory>/cljs"}
 ```
 
 ## Config reference:
@@ -31,7 +47,5 @@
                              "/modules/drivers/sparksql/src"
                              "/modules/drivers/sqlite/src"
                              "/modules/drivers/sqlserver/src"
-                             "/modules/drivers/vertica/src"]
- :overrides [{:file "/src/metabase/analyze/fingerprint/fingerprinters.clj"
-              :message "Error generating fingerprint for {0}"}]}
+                             "/modules/drivers/vertica/src"]}
 ```

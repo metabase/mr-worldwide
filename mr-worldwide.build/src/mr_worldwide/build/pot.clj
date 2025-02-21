@@ -1,4 +1,4 @@
-(ns mr-worldwide.build.enumerate
+(ns mr-worldwide.build.pot
   "Enumerate and create pot file from the backend worktree of metabase. Look through all of our source paths for calls
   to `trs`, `deferred-trs`, etc. to find strings we need in our pot file (po template). Use grasp to find forms by the
   `::translate` spec. These forms come back with metadata indicating file and line/column. We look at the form to pick
@@ -8,7 +8,8 @@
    [clojure.java.io :as io]
    [clojure.spec.alpha :as s]
    [clojure.string :as str]
-   [grasp.api :as g])
+   [grasp.api :as g]
+   [mr-worldwide.build.util :as u])
   (:import
    (org.fedorahosted.tennera.jgettext Catalog HeaderFields Message PoWriter)))
 
@@ -149,9 +150,7 @@
      :entry-count  (count grouped)
      :bad-forms    bad-forms}))
 
-(defn enumerate
-  "Entrypoint for creating a backend pot file. Exits with 0 if all forms were processed correctly, exits with 1 if one
-  or more forms were found that it could not process."
+(defn- enumerate!
   [{:keys [pot-filename], :as config}]
   (when (str/blank? pot-filename)
     (throw (ex-info (str "Please provide a filename argument. e.g.: "
@@ -166,3 +165,15 @@
                       {:config    config
                        :bad-forms bad-forms})))
     (println "Done.")))
+
+(defn build-pot!
+  "Entrypoint for creating a backend pot file. Exits with 0 if all forms were processed correctly, exits with 1 if one
+  or more forms were found that it could not process."
+  [{:keys [target-directory]
+    :or   {target-directory "target/mr-worldwide"}
+    :as   config}]
+  (enumerate!
+   (merge {:target-directory target-directory
+           :pot-filename     (u/filename target-directory "strings.pot")
+           :source-paths     ["src"]}
+          config)))

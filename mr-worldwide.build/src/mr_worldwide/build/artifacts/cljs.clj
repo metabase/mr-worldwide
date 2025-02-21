@@ -1,4 +1,4 @@
-(ns mr-worldwide.build.create-artifacts.frontend
+(ns mr-worldwide.build.artifacts.cljs
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
@@ -11,7 +11,8 @@
 
 (set! *warn-on-reflection* true)
 
-(defn- frontend-message?
+;; TODO -- fixme
+#_(defn- frontend-message?
   "Whether this i18n `message` comes from a frontend source file."
   [{:keys [source-references]}]
   (some #(str/includes? % "frontend")
@@ -26,7 +27,7 @@
   {"" (into {}
             (comp
              ;; filter out i18n messages that aren't used on the FE client
-             (filter frontend-message?)
+             #_(filter frontend-message?)
              i18n/print-message-count-xform
              (map (fn [message]
                     [(->ttag-reference (:id message))
