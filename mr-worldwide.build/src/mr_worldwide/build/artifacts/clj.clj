@@ -2,6 +2,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [clojure.tools.logging :as log]
    [mr-worldwide.build.common :as i18n]
    [mr-worldwide.build.util :as u])
   (:import
@@ -10,25 +11,26 @@
 
 (set! *warn-on-reflection* true)
 
-(defn- backend-message? [{:keys [source-references]}]
-  (boolean
-   (let [paths (eduction
-                ;; Sometimes 2 paths exist in a single string, space separated
-                (mapcat #(str/split % #" "))
-                ;; Strip off the line number at the end of some paths
-                (map #(str/split % #":"))
-                (map first)
-                source-references)]
-     (some (fn [path]
-             (some
-              (fn [suffix]
-                (str/ends-with? path suffix))
-              [".clj" ".cljc"]))
-           paths))))
+(defn- clj-message? [{:keys [source-references], :as _message}]
+  (let [paths (eduction
+               ;; Sometimes 2 paths exist in a single string, space separated
+               (mapcat #(str/split % #" "))
+               ;; Strip off the line number at the end of some paths
+               (map #(str/split % #":"))
+               (map first)
+               source-references)]
+    (some (fn [path]
+            (some
+             (fn [suffix]
+               (str/ends-with? path suffix))
+             [".clj" ".cljc"]))
+          paths)))
 
 (def ^:private apostrophe-regex
   "Regex that matches incorrectly escaped apostrophe characters.
-  Matches on a single apostrophe surrounded by any letter, number, space, or diacritical character (chars with accents like é) and is case-insensitive"
+
+  Matches on a single apostrophe surrounded by any letter, number, space, or diacritical character (chars with accents
+  like é) and is case-insensitive."
   #"(?<![^a-zA-Z0-9\s\u00C0-\u017F])'(?![^a-zA-Z0-9\s\u00C0-\u017F])")
 
 (defn- fix-unescaped-apostrophes [message]
@@ -40,16 +42,16 @@
 (defn- messages->edn
   [messages]
   (eduction
-   (filter backend-message?)
+   (filter clj-message?)
    (map fix-unescaped-apostrophes)
-   i18n/print-message-count-xform
+   i18n/log-message-count-xform
    messages))
 
-(defn- target-filename [{:keys [backend-target-directory], :as _config} locale]
-  (u/filename backend-target-directory (format "%s.edn" locale)))
+(defn- target-filename [{:keys [clj-target-directory], :as _config} locale]
+  (u/filename clj-target-directory (format "%s.edn" locale)))
 
 (defn- write-edn-file! [po-contents target-file]
-  (println "Write EDN file")
+  (log/debug "Write EDN file")
   (with-open [os (FileOutputStream. (io/file target-file))
               w  (OutputStreamWriter. os StandardCharsets/UTF_8)]
     (.write w "{\n")
@@ -75,10 +77,11 @@
 
 (defn create-artifact-for-locale!
   "Create an artifact with translated strings for `locale` for backend (Clojure) usage."
-  [{:keys [backend-target-directory], :as config} locale]
+  [{:keys [clj-target-directory], :as config} locale]
+  {:pre [(some? clj-target-directory)]}
   (let [target-file (target-filename config locale)]
-    (printf "Create backend artifact %s from %s\n" target-file (i18n/locale-source-po-filename config locale))
-    (u/create-directory-unless-exists! backend-target-directory)
+    (log/infof "Create CLJ artifact %s from %s" target-file (i18n/locale-source-po-filename config locale))
+    (u/create-directory-unless-exists! clj-target-directory)
     (u/delete-file-if-exists! target-file)
     (write-edn-file! (i18n/po-contents config locale) target-file)
     (u/assert-file-exists target-file)))

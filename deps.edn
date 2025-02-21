@@ -1,6 +1,7 @@
 {:deps
  {io.github.metabase/mr-worldwide       {:local/root "./mr-worldwide"}
   io.github.metabase/mr-worldwide.build {:local/root "./mr-worldwide.build"}}
+
  :aliases
  {:dev
   {:extra-paths ["mr-worldwide/test"

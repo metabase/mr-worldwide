@@ -1,6 +1,8 @@
 (ns mr-worldwide.build.util
   (:require
-   [clojure.string :as str])
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.tools.logging :as log])
   (:import
    (java.io File)
    (org.apache.commons.io FileUtils)))
@@ -9,15 +11,16 @@
 
 (defn file-exists?
   "Does a file or directory with `filename` exist?"
-  [^String filename]
+  [filename]
   (when filename
-    (.exists (File. filename))))
+    (.exists (io/file filename))))
 
 (defn assert-file-exists
   "If file with `filename` exists, return `filename` as is; otherwise, throw Exception."
   ^String [filename & [message]]
   (when-not (file-exists? filename)
-    (throw (ex-info (format "File %s does not exist. %s" (pr-str filename) (or message "")) {:filename filename})))
+    (throw (ex-info (format "File %s does not exist. %s" (pr-str filename) (or message ""))
+                    {:filename filename})))
   (str filename))
 
 (defn filename
@@ -30,27 +33,28 @@
 
 (defn delete-file-if-exists!
   "Delete a file or directory (recursively) if it exists."
-  ([^String filename]
-   (printf "Delete %s if exists\n" filename)
+  ([filename]
+   (log/debugf "Delete %s if exists" filename)
    (if (file-exists? filename)
-     (let [file (File. filename)]
+     (let [file (io/file filename)]
        (if (.isDirectory file)
          (FileUtils/deleteDirectory file)
          (.delete file))
-       (printf "Deleted %s.\n" filename))
-     (printf "Don't need to delete %s, file does not exist.\n" filename))
+       (log/debugf "Deleted %s." filename))
+     (log/debugf "Don't need to delete %s, file does not exist." filename))
    (assert (not (file-exists? filename))))
 
   ([file & more]
-   (dorun (map delete-file-if-exists! (cons file more)))))
+   (doseq [file (cons file more)]
+     (delete-file-if-exists! file))))
 
 (defn create-directory-unless-exists!
   "Create a directory if it does not already exist. Returns `dir`."
-  ^String [^String dir]
-  (printf "Create directory %s if it does not exist\n" dir)
+  ^String [dir]
+  (log/debugf "Create directory %s if it does not exist" dir)
   (if (file-exists? dir)
-    (printf "%s already exists.\n" dir)
+    (log/debugf "%s already exists." dir)
     (do
-      (printf "Create directory %s\n" dir)
-      (.mkdirs (File. dir))))
+      (log/debugf "Create directory %s" dir)
+      (.mkdirs (io/file dir))))
   dir)

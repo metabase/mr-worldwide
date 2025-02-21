@@ -3,6 +3,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [clojure.tools.logging :as log]
    [mr-worldwide.build.common :as i18n]
    [mr-worldwide.build.util :as u])
   (:import
@@ -11,24 +12,26 @@
 
 (set! *warn-on-reflection* true)
 
-;; TODO -- fixme
-#_(defn- frontend-message?
+(defn- js-or-cljs-message?
   "Whether this i18n `message` comes from a frontend source file."
-  [{:keys [source-references]}]
-  (some #(str/includes? % "frontend")
+  [{:keys [source-references], :as _message}]
+  (some (fn [file]
+          (some #(str/ends-with? file %)
+                [".cljs" ".cljc" ".js" ".jsx" ".ts" ".tsx"]))
         source-references))
 
 (defn- ->ttag-reference
   "Replace an xgettext `{0}` style reference with a ttag `${ 0 }` style reference."
   [message-id]
+  {:pre [(string? message-id)]}
   (str/replace message-id #"\{\s*(\d+)\s*\}" "\\${ $1 }"))
 
 (defn- ->translations-map [messages]
   {"" (into {}
             (comp
              ;; filter out i18n messages that aren't used on the FE client
-             #_(filter frontend-message?)
-             i18n/print-message-count-xform
+             (filter js-or-cljs-message?)
+             i18n/log-message-count-xform
              (map (fn [message]
                     [(->ttag-reference (:id message))
                      (if (:plural? message)
@@ -42,23 +45,25 @@
   [po-contents]
   {:charset      "utf-8"
    :headers      (into {} (for [[k v] (:headers po-contents)]
-                            [(str/lower-case k) v]))
+                            [(.toLowerCase (str k) java.util.Locale/ENGLISH) v]))
    :translations (->translations-map (:messages po-contents))})
 
 (defn- i18n-map [config locale]
   (->i18n-map (i18n/po-contents config locale)))
 
-(defn- target-filename [{:keys [frontend-target-directory], :as _config} locale]
-  (u/filename frontend-target-directory (format "%s.json" (str/replace locale #"-" "_"))))
+(defn- target-filename [{:keys [cljs-target-directory], :as _config} locale]
+  {:pre [(some? cljs-target-directory)]}
+  (u/filename cljs-target-directory (format "%s.json" (str/replace locale #"-" "_"))))
 
 (defn create-artifact-for-locale!
   "Create an artifact with translated strings for `locale` for frontend (JS) usage."
-  [config locale]
+  [{:keys [cljs-target-directory], :as config} locale]
+  {:pre [(some? cljs-target-directory)]}
   (let [target-file (target-filename config locale)]
-    (printf "Create frontend artifact %s from %s\n" target-file (i18n/locale-source-po-filename config locale))
-    (u/create-directory-unless-exists! (:frontend-target-directory config))
+    (log/infof "Create frontend artifact %s from %s" target-file (i18n/locale-source-po-filename config locale))
+    (u/create-directory-unless-exists! cljs-target-directory)
     (u/delete-file-if-exists! target-file)
-    (println "Write JSON")
+    (log/debug "Write JSON")
     (with-open [os (FileOutputStream. (io/file target-file))
                 w  (OutputStreamWriter. os StandardCharsets/UTF_8)]
       (json/generate-stream (i18n-map config locale) w))

@@ -34,7 +34,7 @@
   (testing "messages present in any .clj and .cljc files are detected as backend messages"
     #_{:clj-kondo/ignore [:equals-true :equals-false]}
     (are [source-references expected] (= expected
-                                         (@#'clj/backend-message? {:source-references source-references}))
+                                         (@#'clj/clj-message? {:source-references source-references}))
       ;; Simple .clj and .cljc files with and without line numbers
       ["test.clj"]                                                                  true
       ["test.clj:123"]                                                              true

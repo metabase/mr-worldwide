@@ -8,6 +8,7 @@
    [clojure.java.io :as io]
    [clojure.spec.alpha :as s]
    [clojure.string :as str]
+   [clojure.tools.logging :as log]
    [grasp.api :as g]
    [mr-worldwide.build.util :as u])
   (:import
@@ -145,7 +146,7 @@
       (let [po-writer (PoWriter.)
             catalog   (processed->catalog grouped)]
         (.write po-writer catalog writer)))
-    (println "Created pot file at " pot-filename)
+    (log/infof "Created pot file at %s" pot-filename)
     {:valid-usages (count good-forms)
      :entry-count  (count grouped)
      :bad-forms    bad-forms}))
@@ -158,22 +159,19 @@
                          "  clj -X:build mr-worldwide.build.enumerate/enumerate :pot-filename '\"metabase.pot\"'")
                     {:config config})))
   (let [{:keys [valid-usages entry-count bad-forms]} (create-pot-file! config)]
-    (printf "Found %d forms for translations\n" valid-usages)
-    (printf "Grouped into %d distinct pot entries\n" entry-count)
+    (log/infof "Found %d forms for translations" valid-usages)
+    (log/infof "Grouped into %d distinct pot entries" entry-count)
     (when (seq bad-forms)
       (throw (ex-info (format "Found %d forms that could not be analyzed" (count bad-forms))
                       {:config    config
                        :bad-forms bad-forms})))
-    (println "Done.")))
+    (log/info "Done.")))
 
 (defn build-pot!
   "Entrypoint for creating a backend pot file. Exits with 0 if all forms were processed correctly, exits with 1 if one
   or more forms were found that it could not process."
-  [{:keys [target-directory]
-    :or   {target-directory "target/mr-worldwide"}
-    :as   config}]
+  [config]
   (enumerate!
-   (merge {:target-directory target-directory
-           :pot-filename     (u/filename target-directory "strings.pot")
-           :source-paths     ["src"]}
+   (merge {:pot-filename (u/filename "target" "mr-worldwide" "strings.pot")
+           :source-paths ["src"]}
           config)))

@@ -2,6 +2,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [clojure.tools.logging :as log]
    [mr-worldwide.build.util :as u])
   (:import
    (org.fedorahosted.tennera.jgettext Catalog HeaderFields Message PoParser)))
@@ -15,6 +16,7 @@
     ;; =>
     #{\"nl\" \"pt\" \"zh\" \"tr\" \"it\" \"fa\" ...}"
   [{:keys [po-files-directory], :as _config}]
+  {:pre [(some? po-files-directory)]}
   (into
    (sorted-set)
    (for [^java.io.File file (.listFiles (io/file po-files-directory))
@@ -29,6 +31,7 @@
   ;; =>
   \"/home/cam/metabase/locales/fr.po\""
   [{:keys [po-files-directory], :as _config} locale]
+  {:pre [(some? po-files-directory)]}
   (u/filename po-files-directory (format "%s.po" locale)))
 
 ;; see https://github.com/zanata/jgettext/tree/master/src/main/java/org/fedorahosted/tennera/jgettext
@@ -62,7 +65,7 @@
   {:headers  (po-headers config locale)
    :messages (po-messages-seq config locale)})
 
-(defn print-message-count-xform
+(defn log-message-count-xform
   "Transducer that prints a count of how many translation strings we process/write."
   [rf]
   (let [num-messages (volatile! 0)]
@@ -70,7 +73,7 @@
       ([]
        (rf))
       ([result]
-       (printf "Wrote %d messages.\n" @num-messages)
+       (log/infof "Wrote %d messages." @num-messages)
        (rf result))
       ([result message]
        (vswap! num-messages inc)
