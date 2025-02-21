@@ -38,7 +38,7 @@
          (FileUtils/deleteDirectory file)
          (.delete file))
        (printf "Deleted %s.\n" filename))
-     (printf "Don't need to delete %s, file does not exist.]\n" filename))
+     (printf "Don't need to delete %s, file does not exist.\n" filename))
    (assert (not (file-exists? filename))))
 
   ([file & more]
