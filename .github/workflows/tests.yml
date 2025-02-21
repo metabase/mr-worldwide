@@ -8,7 +8,7 @@ on:
 
 jobs:
   kondo:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
 
   tests-mr-worldwide:
     name: Run tests (mr-worldwide)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
     - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
 
   tests-mr-worldwide-build:
     name: Run tests (mr-worldwide.build)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
     - uses: actions/checkout@v4
@@ -50,8 +50,29 @@ jobs:
       env:
         CI: TRUE
 
+  tests-mr-worldwide-cljs:
+    name: Run CLJS tests (mr-worldwide)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Java & Clojure
+      uses: ./.github/actions/setup-clojure
+      with:
+        cache-key: tests-cljs
+    - uses: actions/setup-node@v4
+    - name: Install packages
+      run: >-
+        npm install
+    - name: Build CLJS bundle
+      run: >-
+        ./node_modules/.bin/shadow-cljs compile test
+    - name: Run tests
+      run: >-
+        node target/node-tests.js
+
   whitespace-linter:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Setup Java & Clojure
@@ -62,7 +83,7 @@ jobs:
       name: Run whitespace linter
 
   check:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Setup Java & Clojure
@@ -73,7 +94,7 @@ jobs:
       name: Check namespaces
 
   # codecov:
-  #   runs-on: ubuntu-20.04
+  #   runs-on: ubuntu-latest
   #   steps:
   #   - uses: actions/checkout@v4
   #   - name: Setup Java & Clojure
@@ -88,7 +109,7 @@ jobs:
   #       files: ./target/coverage/codecov.json
 
   codespell:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: codespell-project/actions-codespell@master

@@ -28,6 +28,7 @@ runs:
           ~/.m2/repository
           ~/.gitlibs
           ~/.deps.clj
+          node_modules
         key: v1-${{ hashFiles('./deps.edn') }}-${{ inputs.cache-key }}
         restore-keys: |
           v1-${{ hashFiles('./deps.edn') }}-

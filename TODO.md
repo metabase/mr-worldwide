@@ -7,4 +7,4 @@
 
 - Documentation.
 
-- Set up ClojureScript tests.
+- Tests that use real Metabase files need some replacement files
