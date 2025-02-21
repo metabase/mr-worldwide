@@ -8,3 +8,5 @@
 - Documentation.
 
 - Tests that use real Metabase files need some replacement files
+
+- Build needs and actual e2e test.

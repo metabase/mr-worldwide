@@ -32,7 +32,8 @@
   ;; Empty directory in case some locales were removed
   (u/delete-file-if-exists! (:backend-target-directory config))
   (u/delete-file-if-exists! (:frontend-target-directory config))
-  (doall (pmap create-artifacts-for-locale! (common/locales config))))
+  (doseq [locale (common/locales config)]
+    (create-artifacts-for-locale! config locale)))
 
 (defn create-all-artifacts!
   "Create backend and frontend i18n artifacts."
