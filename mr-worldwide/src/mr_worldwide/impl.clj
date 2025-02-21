@@ -100,7 +100,6 @@
   (defn- find-fallback-locale [a-locale]
     (f (available-locale-names) a-locale)))
 
-;; Note: this logic should be kept in sync with the one in `frontend/src/metabase/public/LocaleProvider.tsx`
 (defn fallback-locale
   "Find a translated fallback Locale in the following order:
     1) If it is a language + country Locale, try the language-only Locale

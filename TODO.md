@@ -9,4 +9,6 @@
 
 - Tests that use real Metabase files need some replacement files
 
-- Build needs and actual e2e test.
+- Build needs actual e2e tests -- one for generating the POT file and one for generating resources from POs.
+
+- Should build scripts use tools.logging instead of println/printf??

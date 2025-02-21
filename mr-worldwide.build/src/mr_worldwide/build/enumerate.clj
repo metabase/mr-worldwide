@@ -134,17 +134,17 @@
 (defn- create-pot-file!
   "String sources and an output filename. Writes the pot file of translation strings found in sources and returns a map
   of number of valid usages, number of distinct translation strings, and the bad forms that could not be identified."
-  [config filename]
+  [{:keys [pot-filename], :as config}]
   (let [analyzed   (analyze-translations config)
         valid?     (comp string? :message)
         bad-forms  (remove valid? analyzed)
         good-forms (filter valid? analyzed)
         grouped    (group-results-by-string config good-forms)]
-    (with-open [writer (io/writer filename)]
+    (with-open [writer (io/writer pot-filename)]
       (let [po-writer (PoWriter.)
             catalog   (processed->catalog grouped)]
         (.write po-writer catalog writer)))
-    (println "Created pot file at " filename)
+    (println "Created pot file at " pot-filename)
     {:valid-usages (count good-forms)
      :entry-count  (count grouped)
      :bad-forms    bad-forms}))
@@ -152,28 +152,17 @@
 (defn enumerate
   "Entrypoint for creating a backend pot file. Exits with 0 if all forms were processed correctly, exits with 1 if one
   or more forms were found that it could not process."
-  [config {:keys [filename]}]
-  (when (str/blank? filename)
-    (println "Please provide a filename argument. Eg: ")
-    (println "  clj -X:build i18n.enumerate/enumerate :filename \"\\\"$POT_BACKEND_NAME\\\"\"")
-    (println "  clj -X:build i18n.enumerate/enumerate :filename '\"metabase.pot\"'")
-    (System/exit 1))
-  (let [{:keys [valid-usages entry-count bad-forms]} (create-pot-file! config filename)]
-    (println (format "Found %d forms for translations" valid-usages))
-    (println (format "Grouped into %d distinct pot entries" entry-count))
+  [{:keys [pot-filename], :as config}]
+  (when (str/blank? pot-filename)
+    (throw (ex-info (str "Please provide a filename argument. e.g.: "
+                         \newline
+                         "  clj -X:build mr-worldwide.build.enumerate/enumerate :pot-filename '\"metabase.pot\"'")
+                    {:config config})))
+  (let [{:keys [valid-usages entry-count bad-forms]} (create-pot-file! config)]
+    (printf "Found %d forms for translations\n" valid-usages)
+    (printf "Grouped into %d distinct pot entries\n" entry-count)
     (when (seq bad-forms)
-      (println (format "Found %d forms that could not be analyzed" (count bad-forms)))
-      (run! (comp println pr-str) bad-forms)
-      (System/exit 1))
-    (System/exit 0)))
-
-;;; TODO -- these are out of date; update
-#_(comment
-    (create-pot-file! {:source-paths ["/home/cam/src/metabase/driver/util.clj"]}
-                      "pot.pot")
-
-    (take 4 (analyze-translations roots))
-    (def single-file (str u/project-root-directory "/src/metabase/util.clj"))
-    (create-pot-file! single-file "pot.pot")
-    (map (juxt meta identity)
-         (g/grasp single-file ::translate)))
+      (throw (ex-info (format "Found %d forms that could not be analyzed" (count bad-forms))
+                      {:config    config
+                       :bad-forms bad-forms})))
+    (println "Done.")))

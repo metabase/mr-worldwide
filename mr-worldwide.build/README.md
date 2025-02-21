@@ -1,7 +1,20 @@
+## Create POT (Translation Template) File
+
+```clj
+(mr-worldwide.build.enumerate/enumerate config)
+```
+
+## Create EDN and JSON Artifacts from PO Files
+
+```clj
+(mr-worldwide.build.create-artifacts config)
+```
+
 ## Config reference:
 
 ```clj
-{:locales-directory         "/home/cam/metabase/locales"
+{:pot-filename              "/home/cam/metabase/locales/metabase-backend.pot"
+ :po-files-directory        "/home/cam/metabase/locales"
  :target-directory          "/home/cam/metabase/resources"
  :frontend-target-directory "/home/cam/metabase/resources/frontend_client/app/locales"
  :backend-target-directory  "/home/cam/metabase/resources/i18n"
@@ -20,5 +33,5 @@
                              "/modules/drivers/sqlserver/src"
                              "/modules/drivers/vertica/src"]
  :overrides [{:file "/src/metabase/analyze/fingerprint/fingerprinters.clj"
-               :message "Error generating fingerprint for {0}"}]}
+              :message "Error generating fingerprint for {0}"}]}
 ```

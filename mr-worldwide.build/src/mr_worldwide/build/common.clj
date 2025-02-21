@@ -11,13 +11,13 @@
 (defn locales
   "Set of all locales for which we have i18n bundles.
 
-    (locales {:locales-directory \"/home/cam/metabase/locales\"})
+    (locales {:po-files-directory \"/home/cam/metabase/locales\"})
     ;; =>
     #{\"nl\" \"pt\" \"zh\" \"tr\" \"it\" \"fa\" ...}"
-  [{:keys [locales-directory], :as _config}]
+  [{:keys [po-files-directory], :as _config}]
   (into
    (sorted-set)
-   (for [^java.io.File file (.listFiles (io/file locales-directory))
+   (for [^java.io.File file (.listFiles (io/file po-files-directory))
          :let               [file-name (.getName file)]
          :when              (str/ends-with? file-name ".po")]
      (str/replace file-name #"\.po$" ""))))
@@ -25,11 +25,11 @@
 (defn locale-source-po-filename
   "E.g.
 
-  (locale-source-po-filename {:locales-directory \"/home/cam/metabase/locales\"} \"fr\")
+  (locale-source-po-filename {:po-files-directory \"/home/cam/metabase/locales\"} \"fr\")
   ;; =>
   \"/home/cam/metabase/locales/fr.po\""
-  [{:keys [locales-directory], :as _config} locale]
-  (u/filename locales-directory (format "%s.po" locale)))
+  [{:keys [po-files-directory], :as _config} locale]
+  (u/filename po-files-directory (format "%s.po" locale)))
 
 ;; see https://github.com/zanata/jgettext/tree/master/src/main/java/org/fedorahosted/tennera/jgettext
 
