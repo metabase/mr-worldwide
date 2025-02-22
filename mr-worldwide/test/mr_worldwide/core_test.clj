@@ -1,5 +1,6 @@
 (ns mr-worldwide.core-test
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [clojure.walk :as walk]
    [mr-worldwide.core :as i18n]
@@ -221,3 +222,9 @@
          AssertionError
          #"only supports a single \{0\} placeholder"
          (#'i18n/validate-n "{0} {1}" "{0} {1}")))))
+
+(deftest ^:parallel json-encoding-test
+  (is (= "\"Day\""
+         (json/generate-string (i18n/deferred-trun "Day" "Days" 1))))
+  (is (= "{\"Day\":1}"
+         (json/generate-string {(i18n/deferred-trun "Day" "Days" 1) 1}))))

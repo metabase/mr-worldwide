@@ -106,20 +106,10 @@
   `json/add-encoder`. Ideally we'd implement those protocols directly as it's faster, but currently that doesn't
   work with Cheshire"
   [localized-string json-generator]
-  (json/generate-string json-generator (str localized-string)))
+  (json.generate/write-string json-generator (str localized-string)))
 
 (json.generate/add-encoder UserLocalizedString localized-to-json)
 (json.generate/add-encoder SiteLocalizedString localized-to-json)
-
-(def LocalizedString
-  "Schema for user and system localized string instances"
-  (letfn [(instance-of [^Class klass]
-            [:fn
-             {:error/message (str "instance of " (.getCanonicalName klass))}
-             (partial instance? klass)])]
-    [:or
-     (instance-of UserLocalizedString)
-     (instance-of SiteLocalizedString)]))
 
 (defn- valid-str-form?
   [str-form]
