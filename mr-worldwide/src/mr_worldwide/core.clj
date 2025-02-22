@@ -22,7 +22,9 @@
   fallback-locale
   locale
   normalized-locale-string
-  translate])
+  translate
+  set-config-filename!
+  set-clj-bundle-directory!])
 
 (def ^:dynamic *user-locale*
   "Bind this to a string, keyword, `Locale`, or thunk that returns one of these to set the locale for the current
@@ -47,7 +49,7 @@
 (defn- -site-locale []
   (or *site-locale*
       @-default-site-locale
-      "en"))
+      (Locale/getDefault)))
 
 (defn site-locale
   "The default locale for this Metabase installation. Normally this is the value of the `site-locale` Setting."

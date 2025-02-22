@@ -40,7 +40,7 @@
                    (f)))))
 
         (testing "Should use user locale if set"
-          (mt/with-user-locale "es"
+          (binding [i18n/*user-locale* "es"]
             (is (= "deben tener 140 caracteres o menos"
                    (f)))
 
@@ -72,7 +72,7 @@
                    (f)))
 
             (testing "...even if user locale is set"
-              (mt/with-user-locale "en"
+              (binding [i18n/*user-locale* "en"]
                 (is (= "deben tener 140 caracteres o menos"
                        (f)))))))))))
 
@@ -97,7 +97,7 @@
                    (f 2)))))
 
         (testing "should use user locale if set"
-          (mt/with-user-locale "es"
+          (binding [i18n/*user-locale* "es"]
             (is (= "0 tablas"
                    (f 0)))
 

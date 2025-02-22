@@ -25,12 +25,3 @@
     ;; -> \"¡Tu base de datos ha sido añadida!\""
   [bundles & body]
   `(do-with-mock-i18n-bundles ~bundles (fn [] ~@body)))
-
-;;; TODO -- this doesn't need to be a test util, does it? Move into another namespace
-(defmacro with-user-locale
-  "Execute `body` with the current user locale set to `user-locale`."
-  [user-locale & body]
-  `(let [locale# ~user-locale]
-     (t/testing (format "\nwith user locale %s" (pr-str locale#))
-       (binding [i18n/*user-locale* locale#]
-         ~@body))))

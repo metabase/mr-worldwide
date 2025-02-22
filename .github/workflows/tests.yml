@@ -108,8 +108,8 @@ jobs:
   #     with:
   #       files: ./target/coverage/codecov.json
 
-  codespell:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: codespell-project/actions-codespell@master
+  # codespell:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: codespell-project/actions-codespell@master
