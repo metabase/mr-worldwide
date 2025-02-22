@@ -19,7 +19,7 @@ jobs:
         cache-key: deploy
     - name: Build mr-worldwide JAR
       run: >-
-        clojure -T:build build '{:project mr-worldwide}'
+        clojure -T:build jar '{:project mr-worldwide}'
       env:
         GITHUB_SHA: ${{ env.GITHUB_SHA }}
     - name: Deploy mr-worldwide to Clojars
@@ -30,7 +30,7 @@ jobs:
         CLOJARS_PASSWORD: ${{ secrets.CLOJARS_TOKEN_CORE }}
     - name: Build mr-worldwide.build JAR
       run: >-
-        clojure -T:build build '{:project mr-worldwide.build}'
+        clojure -T:build jar '{:project mr-worldwide.build}'
       env:
         GITHUB_SHA: ${{ env.GITHUB_SHA }}
     - name: Deploy mr-worldwide.build to Clojars
