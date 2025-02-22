@@ -17,12 +17,25 @@ jobs:
       uses: ./.github/actions/setup-clojure
       with:
         cache-key: deploy
-    - name: Build JAR
-      run: clojure -T:build build
+    - name: Build mr-worldwide JAR
+      run: >-
+        clojure -T:build build '{:project mr-worldwide}'
       env:
         GITHUB_SHA: ${{ env.GITHUB_SHA }}
-    - name: Deploy to Clojars
-      run: clojure -T:build deploy
+    - name: Deploy mr-worldwide to Clojars
+      run: >-
+        clojure -T:build deploy '{:project mr-worldwide}'
       env:
         CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
-        CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+        CLOJARS_PASSWORD: ${{ secrets.CLOJARS_TOKEN_CORE }}
+    - name: Build mr-worldwide.build JAR
+      run: >-
+        clojure -T:build build '{:project mr-worldwide.build}'
+      env:
+        GITHUB_SHA: ${{ env.GITHUB_SHA }}
+    - name: Deploy mr-worldwide.build to Clojars
+      run: >-
+        clojure -T:build deploy '{:project mr-worldwide.build}'
+      env:
+        CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+        CLOJARS_PASSWORD: ${{ secrets.CLOJARS_TOKEN_BUILD }}
