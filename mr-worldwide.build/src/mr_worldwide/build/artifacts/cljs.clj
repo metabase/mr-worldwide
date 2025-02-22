@@ -15,9 +15,9 @@
 (defn- js-or-cljs-message?
   "Whether this i18n `message` comes from a frontend source file."
   [{:keys [source-references], :as _message}]
-  (some (fn [file]
-          (some #(str/ends-with? file %)
-                [".cljs" ".cljc" ".js" ".jsx" ".ts" ".tsx"]))
+  (some (fn [path]
+          ;; cljc, cljs, js, ts, jsx, tsx with optional line number
+          (re-find #"\.(?:(?:clj[cs])|(?:[jt]sx?))(?::\d+)?$" path))
         source-references))
 
 (defn- ->ttag-reference

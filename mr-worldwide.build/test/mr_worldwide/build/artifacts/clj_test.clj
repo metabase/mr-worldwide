@@ -5,7 +5,7 @@
    [mr-worldwide.build.artifacts.clj :as clj]
    [mr-worldwide.build.artifacts.test-common :as test-common]))
 
-(deftest edn-test
+(deftest ^:parallel edn-test
   (#'clj/write-edn-file! test-common/po-contents "/tmp/out.edn")
   (is (= ["{"
           ":headers"
@@ -34,7 +34,7 @@
   (testing "messages present in any .clj and .cljc files are detected as backend messages"
     #_{:clj-kondo/ignore [:equals-true :equals-false]}
     (are [source-references expected] (= expected
-                                         (@#'clj/clj-message? {:source-references source-references}))
+                                         (boolean (@#'clj/clj-message? {:source-references source-references})))
       ;; Simple .clj and .cljc files with and without line numbers
       ["test.clj"]                                                                  true
       ["test.clj:123"]                                                              true
@@ -44,9 +44,9 @@
       ["src/metabase/query_processor/streaming/xlsx.clj"]                           true
       ["metabase/mbql/normalize.cljc:839"]                                          true
       ["metabase/driver/common.clj:223"]                                            true
-      ["clj/mbql/src/metabase/mbql/normalize.clj"]                              true
+      ["clj/mbql/src/metabase/mbql/normalize.clj"]                                  true
       ["metabase_enterprise/audit_app/interface.clj:25"]                            true
-      ["enterprise/clj/test/metabase_enterprise/serialization/load_test.clj"]   true
+      ["enterprise/clj/test/metabase_enterprise/serialization/load_test.clj"]       true
       ["target/classes/metabase/request/util.clj"]                                  true
       ;; Both a FE and a BE path
       ["frontend/src/metabase/browse/components/TableBrowser/TableBrowser.jsx:145"

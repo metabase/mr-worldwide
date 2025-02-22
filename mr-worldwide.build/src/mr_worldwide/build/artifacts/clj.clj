@@ -12,19 +12,9 @@
 (set! *warn-on-reflection* true)
 
 (defn- clj-message? [{:keys [source-references], :as _message}]
-  (let [paths (eduction
-               ;; Sometimes 2 paths exist in a single string, space separated
-               (mapcat #(str/split % #" "))
-               ;; Strip off the line number at the end of some paths
-               (map #(str/split % #":"))
-               (map first)
-               source-references)]
-    (some (fn [path]
-            (some
-             (fn [suffix]
-               (str/ends-with? path suffix))
-             [".clj" ".cljc"]))
-          paths)))
+  (some (fn [path]
+          (re-find #"\.cljc?(?::\d+)?$" path))
+        source-references))
 
 (def ^:private apostrophe-regex
   "Regex that matches incorrectly escaped apostrophe characters.

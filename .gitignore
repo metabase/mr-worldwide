@@ -3,11 +3,12 @@
 *.jar
 .\#*
 .clj-kondo/.deps.edn.md5sum
+.cpcache
 .lsp
+.nrepl-port
 /*.iml
 /.clj-kondo/.cache
 /.clj-kondo/methodical/
-/.cpcache
 /.eastwood
 /.env
 /.envrc
@@ -17,7 +18,6 @@
 /.lein-failures
 /.lein-plugins
 /.lein-repl-history
-/.nrepl-port
 /.shadow-cljs
 /build.xml
 /checkouts

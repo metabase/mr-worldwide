@@ -92,11 +92,11 @@
 
 (def po-contents
   "Contents of a `.po` file."
-  {:headers  {"MIME-Version"              "1.0",
-              "Content-Type"              "text/plain; charset=UTF-8",
-              "Content-Transfer-Encoding" "8bit",
-              "X-Generator"               "POEditor.com",
-              "Project-Id-Version"        "Metabase",
-              "Language"                  "es",
+  {:headers  {"MIME-Version"              "1.0"
+              "Content-Type"              "text/plain; charset=UTF-8"
+              "Content-Transfer-Encoding" "8bit"
+              "X-Generator"               "POEditor.com"
+              "Project-Id-Version"        "Metabase"
+              "Language"                  "es"
               "Plural-Forms"              "nplurals=2; plural=(n != 1);"}
    :messages messages})

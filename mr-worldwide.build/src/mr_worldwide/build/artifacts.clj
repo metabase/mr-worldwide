@@ -1,11 +1,11 @@
 (ns mr-worldwide.build.artifacts
   (:require
    [clojure.pprint :as pprint]
+   [clojure.tools.logging :as log]
    [mr-worldwide.build.artifacts.clj :as clj]
    [mr-worldwide.build.artifacts.cljs :as cljs]
    [mr-worldwide.build.common :as common]
-   [mr-worldwide.build.util :as u]
-   [clojure.tools.logging :as log]))
+   [mr-worldwide.build.util :as u]))
 
 (defn- config-file-contents [{:keys [packages bundle], :as config}]
   {:pre [(seq packages) (string? bundle)]}
