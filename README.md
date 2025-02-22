@@ -19,9 +19,7 @@ It is broken out into two libraries:
   JavaScript/ClojureScript respectively. Typically these steps will be called as part of your build process, so this
   library is only needed as a build dependency.
 
-# `io.github.metabase/mr-worldwide`
-
-# Translating Strings in your Application
+# Translating Strings in your Application with `mr-worldwide`
 
 You can mark strings for translation with the `tru` and `trs` family of macros in `mr-worldwide.core`. `trs` stands
 *TRanslate System*, while `tru` stands for *TRanslate User*, and translate to the system locale and user locale
@@ -291,7 +289,7 @@ Refer to these files for a real-world working example:
 These steps are currently more complicated than I'd like -- PRs to simplify the process of using Mr. Worldwide with
 ClojureScript would be greatly appreciated!
 
-# Building Translation Resources
+# Building Translation Resources with `mr-worldwide.build`
 
 You can use `io.github.metabase/mr-worldwide.build` to build the translation resources that power
 `io.github.metabase/mr-worldwide`. When using Mr. Worldwide, there are three steps to getting your stuff translated:
